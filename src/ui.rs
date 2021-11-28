@@ -1,21 +1,19 @@
 use std::io;
 
-use std::io::Write;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::{Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
-use tui::{backend::CrosstermBackend, Terminal};
+use tui::backend::Backend;
+use tui::Terminal;
 
-pub struct UI<'a, W: Write> {
-    terminal: Terminal<CrosstermBackend<W>>,
+pub struct UI<'a, B: Backend> {
+    terminal: Terminal<B>,
     history: Vec<ListItem<'a>>,
 }
 
-impl<'a, W: Write> UI<'a, W> {
-    pub fn new(writeable: W) -> io::Result<UI<'a, W>> {
-        let backend = CrosstermBackend::new(writeable);
-
+impl<'a, B: Backend> UI<'a, B> {
+    pub fn new(backend: B) -> io::Result<UI<'a, B>> {
         Ok(UI {
             terminal: Terminal::new(backend)?,
             history: Vec::<ListItem>::new(),
@@ -94,6 +92,6 @@ impl<'a, W: Write> UI<'a, W> {
                 .alignment(Alignment::Center)
                 .wrap(Wrap { trim: true });
             f.render_widget(info, top_chunk[1]);
-        });
+        }).expect("draw to terminal");
     }
 }
