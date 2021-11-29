@@ -1,16 +1,14 @@
-use std::io;
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use std::io;
 use tui::backend::CrosstermBackend;
 use tui::Terminal;
 
 mod app;
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     /* Setup
      *
      * - capture stdout in raw mode

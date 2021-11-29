@@ -1,11 +1,11 @@
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use std::io;
+use tui::backend::Backend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::{Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
-use tui::backend::Backend;
 use tui::{Frame, Terminal};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 
 pub struct App {
     input: String,
@@ -20,7 +20,7 @@ impl Default for App {
     }
 }
 impl App {
-    pub fn run<B: Backend> (mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
+    pub fn run<B: Backend>(mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         // TODO: remove
         self.history.push("test1".to_string());
         self.history.push("test2".to_string());
@@ -28,13 +28,15 @@ impl App {
 
         loop {
             let prediction = App::predict(&self.input);
-            terminal.draw(|f| self.ui(f, &prediction)).expect("to draw on terminal");
+            terminal
+                .draw(|f| self.ui(f, &prediction))
+                .expect("to draw on terminal");
 
             match event::read().expect("to read events") {
                 // on Enter
                 Event::Key(KeyEvent {
                     modifiers: _,
-                    code: KeyCode::Enter
+                    code: KeyCode::Enter,
                 }) => {
                     self.history.push("TODO: History".to_string());
                     self.input = String::new();
@@ -42,7 +44,7 @@ impl App {
 
                 Event::Key(KeyEvent {
                     modifiers: _,
-                    code: KeyCode::Backspace
+                    code: KeyCode::Backspace,
                 }) => {
                     self.input.pop();
                 }
@@ -50,7 +52,7 @@ impl App {
                 // control + c
                 Event::Key(KeyEvent {
                     modifiers: KeyModifiers::CONTROL,
-                    code: KeyCode::Char('c')
+                    code: KeyCode::Char('c'),
                 }) => {
                     break Ok(());
                 }
@@ -58,7 +60,7 @@ impl App {
                 // normal char
                 Event::Key(KeyEvent {
                     modifiers: KeyModifiers::NONE | KeyModifiers::SHIFT,
-                    code: KeyCode::Char(c)
+                    code: KeyCode::Char(c),
                 }) => {
                     self.input.push(c);
                 }
@@ -95,7 +97,7 @@ impl App {
                     Constraint::Percentage(85),
                     Constraint::Percentage(15),
                 ]
-                    .as_ref(),
+                .as_ref(),
             )
             .split(top_chunk[0]);
 
@@ -109,14 +111,15 @@ impl App {
 
         //History Block
         let block = Block::default().title("History").borders(Borders::ALL);
-        let items: Vec<ListItem> = self.history
-                                       .iter()
-                                       .enumerate()
-                                       .map(|(i, m)| {
-                                           let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
-                                           ListItem::new(content)
-                                       })
-                                       .collect();
+        let items: Vec<ListItem> = self
+            .history
+            .iter()
+            .enumerate()
+            .map(|(i, m)| {
+                let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
+                ListItem::new(content)
+            })
+            .collect();
         let list = List::new(items)
             .block(Block::default().title("List").borders(Borders::ALL))
             .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
