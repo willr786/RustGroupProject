@@ -1,27 +1,49 @@
 use std::io;
+use crossterm::{
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
 use tui::backend::CrosstermBackend;
-mod ui;
+use tui::Terminal;
+
+mod app;
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /* TODO: Setup input loop */
 
-    /* Setup render loop:
+    /* Setup
      *
-     * - capture stdout
+     * - capture stdout in raw mode
      * - create crossterm backend
-     * - create UI object
-     * - TODO: enter render loop at set tickrate
+     * - create terminal object
+     * - create App object
+     * - TODO: enter app run loop
      */
 
-    let stdout = io::stdout();
-    let ui_backend = CrosstermBackend::new(stdout);
-    let mut ui = ui::UI::new(ui_backend).expect("ui could not be initialized");
+    let mut stdout = io::stdout();
 
-    ui.add_history("test1".to_string());
-    ui.add_history("test2".to_string());
-    ui.add_history("test3".to_string());
+    enable_raw_mode()?;
+    execute!(stdout, EnterAlternateScreen)?;
 
-    ui.render("test".to_string(), "test".to_string());
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    let app = app::App::default();
+    let res = app.run(&mut terminal);
+
+    /* Cleanup
+     *
+     * - return terminal to default state
+     * - print app errors (if any)
+     * - return
+     */
+    disable_raw_mode()?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+    terminal.show_cursor()?;
+
+    if let Err(err) = res {
+        println!("{:?}", err)
+    }
 
     Ok(())
 }
