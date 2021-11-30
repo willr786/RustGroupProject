@@ -21,11 +21,6 @@ impl Default for App {
 }
 impl App {
     pub fn run<B: Backend>(mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
-        // TODO: remove
-        self.history.push("test1".to_string());
-        self.history.push("test2".to_string());
-        self.history.push("test3".to_string());
-
         loop {
             let calculation = App::calculate(&self.input);
 
@@ -39,8 +34,11 @@ impl App {
                     modifiers: _,
                     code: KeyCode::Enter,
                 }) => {
-                    self.history.push("TODO: History".to_string());
-                    self.input = String::new();
+                    if let Some(calc) = calculation {
+                        let entry = format!("{} = {:04}", self.input, calc);
+                        self.history.push(entry);
+                        self.input = String::new();
+                    }
                 }
 
                 Event::Key(KeyEvent {
