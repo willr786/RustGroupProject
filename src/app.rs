@@ -27,9 +27,10 @@ impl App {
         self.history.push("test3".to_string());
 
         loop {
-            let prediction = App::predict(&self.input);
+            let calculation = App::calculate(&self.input);
+
             terminal
-                .draw(|f| self.ui(f, &prediction))
+                .draw(|f| self.ui(f, &calculation))
                 .expect("to draw on terminal");
 
             match event::read().expect("to read events") {
@@ -70,11 +71,17 @@ impl App {
         }
     }
 
-    fn predict(_input: &str) -> String {
-        "TODO: Prediction".to_string()
+    fn calculate(input: &str) -> Option<String> {
+        match sscanf::scanf!(input, "{} {} {}", f64, char, f64) {
+            Some((x, '+', y)) => Some(format!("{:04}", x + y)),
+            Some((x, '-', y)) => Some(format!("{:04}", x - y)),
+            Some((x, '*', y)) => Some(format!("{:04}", x * y)),
+            Some((x, '/', y)) => Some(format!("{:04}", x / y)),
+            _ => None,
+        }
     }
 
-    fn ui<B: Backend>(&self, f: &mut Frame<B>, prediction: &str) {
+    fn ui<B: Backend>(&self, f: &mut Frame<B>, calculation: &Option<String>) {
         // Create Layout Chunks
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -129,6 +136,10 @@ impl App {
 
         // Result Block
         let block = Block::default().title("Result").borders(Borders::ALL);
+        let prediction = match calculation {
+            Some(prediction) => prediction,
+            None => "Could not predict...",
+        };
         let result_inside = Paragraph::new(prediction)
             .block(block)
             .alignment(Alignment::Left);
