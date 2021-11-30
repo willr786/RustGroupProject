@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
      * - create crossterm backend
      * - create terminal object
      * - create App object
-     * - TODO: enter app run loop
+     * - enter app run loop
      */
 
     let mut stdout = io::stdout();
